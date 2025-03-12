@@ -1,0 +1,14 @@
+{
+    "rhcc": {
+        "login_url": "https://www9.tennisclubsoft.com/rhcc",
+        "selectors": {
+            "username": "input[name='email']",
+            "password": "input[name='password']",
+            "login_button": "//button[contains(text(), 'LOG IN TO YOUR ACCOUNT')]",
+            "indoor_court": "a[href*='indoor']",
+            "date": "//td[contains(text(), '{}')]",
+            "court_time": "//div[contains(text(), '{}')]",
+            "confirm_button": "//button[contains(text(), 'Confirm')]"
+        }
+    }
+}
