@@ -4,45 +4,48 @@
 #  使用 selenium 自动化网页交互
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import time
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 def login_and_book(username, password, date, court, court_time):
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # 无头模式，不打开浏览器
     driver = webdriver.Chrome(options=options)
-    
+
     try:
         driver.get("https://www9.tennisclubsoft.com/rhcc")
-        time.sleep(2)
 
-        # 登录
-        driver.find_element(By.NAME, "email").send_keys(username)
-        driver.find_element(By.NAME, "password").send_keys(password)
+        # **等待登录框可见，最多等待 5 秒**
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "input[placeholder='Enter email']")))
+
+        # **登录**
+        driver.find_element(By.CSS_SELECTOR, "input[placeholder='Enter email']").send_keys(username)
+        driver.find_element(By.CSS_SELECTOR, "input[placeholder='Enter password']").send_keys(password)
         driver.find_element(By.XPATH, "//button[contains(text(), 'LOG IN TO YOUR ACCOUNT')]").click()
-        time.sleep(3)
 
-        # 进入 Indoor Court 页面
-        driver.find_element(By.LINK_TEXT, "Indoor Court").click()
-        time.sleep(2)
+        # **等待跳转到主页，最多等待 5 秒**
+        WebDriverWait(driver, 5).until(EC.url_contains("home"))
 
-        # 选择日期
-        date_element = driver.find_element(By.XPATH, f"//td[contains(text(), '{date}')]")
+        # **等待 Indoor Court 页面可点击，最多等待 5 秒**
+        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, "Indoor Court"))).click()
+
+        # **等待日期按钮可点击**
+        date_element = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, f"//td[contains(text(), '{date}')]")))
         date_element.click()
-        time.sleep(2)
 
-        # 选择场地 + 时间
+        # **等待场地 + 时间按钮可点击**
         court_time_xpath = f"//td[contains(text(), '{court_time}')]/following-sibling::td[contains(text(), '{court}')]/..//a[contains(text(), 'Book')]"
-        book_button = driver.find_element(By.XPATH, court_time_xpath)
+        book_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, court_time_xpath)))
         book_button.click()
-        time.sleep(1)
 
-        # 确认预定
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Confirm')]").click()
-        time.sleep(2)
+        # **等待确认按钮可点击**
+        confirm_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Confirm')]")))
+        confirm_button.click()
 
-        return f"成功订场: {court} - {court_time}"
+        return f"✅ 订场成功: {court} - {court_time}"
+
     except Exception as e:
-        return f"订场失败: {str(e)}"
+        return f"⚠️ 订场失败: {str(e)}"
+
     finally:
         driver.quit()
-
