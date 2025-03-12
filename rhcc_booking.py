@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 
-def login_and_book(username, password, date, court_time):
+def login_and_book(username, password, date, court, court_time):
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # 无头模式，不打开浏览器
     driver = webdriver.Chrome(options=options)
@@ -14,7 +14,7 @@ def login_and_book(username, password, date, court_time):
     try:
         driver.get("https://www9.tennisclubsoft.com/rhcc")
         time.sleep(2)
-        
+
         # 登录
         driver.find_element(By.NAME, "email").send_keys(username)
         driver.find_element(By.NAME, "password").send_keys(password)
@@ -30,17 +30,19 @@ def login_and_book(username, password, date, court_time):
         date_element.click()
         time.sleep(2)
 
-        # 选择时间
-        court_element = driver.find_element(By.XPATH, f"//div[contains(text(), '{court_time}')]")
-        court_element.click()
+        # 选择场地 + 时间
+        court_time_xpath = f"//td[contains(text(), '{court_time}')]/following-sibling::td[contains(text(), '{court}')]/..//a[contains(text(), 'Book')]"
+        book_button = driver.find_element(By.XPATH, court_time_xpath)
+        book_button.click()
         time.sleep(1)
 
         # 确认预定
         driver.find_element(By.XPATH, "//button[contains(text(), 'Confirm')]").click()
         time.sleep(2)
 
-        return "订场成功！"
+        return f"成功订场: {court} - {court_time}"
     except Exception as e:
         return f"订场失败: {str(e)}"
     finally:
         driver.quit()
+
