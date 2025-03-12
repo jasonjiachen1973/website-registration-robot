@@ -21,7 +21,11 @@ def login_and_book(username, password, date, court, court_time):
         # **登录**
         driver.find_element(By.CSS_SELECTOR, "input[placeholder='Enter email']").send_keys(username)
         driver.find_element(By.CSS_SELECTOR, "input[placeholder='Enter password']").send_keys(password)
-        driver.find_element(By.XPATH, "//button[contains(text(), 'LOG IN TO YOUR ACCOUNT')]").click()
+        # 等待按钮加载完成，最多 5 秒
+        login_button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, "//input[@id='submit']"))
+        )
+        login_button.click()
 
         # **等待跳转到主页，最多等待 5 秒**
         WebDriverWait(driver, 5).until(EC.url_contains("home"))
