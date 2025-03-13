@@ -51,12 +51,13 @@ def login_and_book(username, password, date, court, court_time):
 
         # **转换日期格式**
         formatted_date = format_date(date)  # 变成 "[ FRI, MAR 14 ]"
+        print(f"Trying to match date: {formatted_date}")  # 调试输出，确认格式是否匹配
 
         # **等待日期按钮可点击**
-        date_xpath = f"//a[@class='caldaylink' and normalize-space(text())=normalize-space('{formatted_date}')]"
+        date_xpath = f"//a[contains(@class, 'caldaylink') and contains(text(), '{formatted_date}')]"
         date_element = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, date_xpath))
-        )
+       )
         driver.execute_script("arguments[0].scrollIntoView();", date_element)
         date_element.click()
 
