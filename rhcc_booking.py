@@ -12,7 +12,7 @@ from datetime import datetime
 
 def format_date(date):
     dt = datetime.strptime(date, "%Y-%m-%d")
-    return f"[ {dt.strftime('%a, %b %d')} ]"  # **保持页面大小写格式**
+    return f"[ {dt.strftime('%a, %b %d')} ]"  # 变成 "[ Fri, Mar 14 ]"
 
 def login_and_book(username, password, date, court, court_time):
     options = webdriver.ChromeOptions()
@@ -52,18 +52,18 @@ def login_and_book(username, password, date, court, court_time):
         # **转换日期格式**
         formatted_date = format_date(date)  # "[ Fri, Mar 14 ]"
 
-        # **调试：打印所有找到的日期**
-        date_elements = driver.find_elements(By.XPATH, "//a[contains(@class, 'caldaylink')] | //span[contains(@class, 'caldaylinkcurrent')]")
+        # **打印所有日期**
+        date_elements = driver.find_elements(By.XPATH, "//a[contains(@class, 'calheaderdaylink')]")
         for element in date_elements:
-            print(f"Found date element: {element.text}")  # ✅ 打印页面中所有的日期
-
-        print(f"Trying to match date: {formatted_date}")  # ✅ 打印要匹配的目标日期
+            print(f"Found date element: {element.get_attribute('outerHTML')}")  # 打印完整 HTML
+        
+        print(f"Trying to match date: {formatted_date}")
 
         # **等待日期按钮可点击**
-        date_xpath = f"//a[@class='caldaylink' and normalize-space(text())='{formatted_date}']"
-        date_element = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, date_xpath))
-        )
+        # **改进的 XPath**
+        date_xpath = f"//a[@class='calheaderdaylink' and normalize-space(.)='{formatted_date}']"
+        print(f"XPath: {date_xpath}")  # 打印 XPath
+        date_element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, date_xpath)))
         driver.execute_script("arguments[0].scrollIntoView();", date_element)
         date_element.click()
 
