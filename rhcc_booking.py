@@ -11,8 +11,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 
 def format_date(date):
-    dt = datetime.strptime(date, "%Y-%m-%d")  # 转换成 datetime 对象
-    return f"[ {dt.strftime('%a, %b %d').upper()} ]"  # 变成 "[ FRI, MAR 14 ]"
+    dt = datetime.strptime(date, "%Y-%m-%d")
+    return f"[ {dt.strftime('%a, %b %d')} ]"  # **保持页面大小写格式**
 
 def login_and_book(username, password, date, court, court_time):
     options = webdriver.ChromeOptions()
@@ -50,16 +50,23 @@ def login_and_book(username, password, date, court, court_time):
         indoor_court_link.click()
 
         # **转换日期格式**
-        formatted_date = format_date(date)  # 变成 "[ FRI, MAR 14 ]"
-        print(f"Trying to match date: {formatted_date}")  # 调试输出，确认格式是否匹配
+        formatted_date = format_date(date)  # "[ Fri, Mar 14 ]"
+
+        # **调试：打印所有找到的日期**
+        date_elements = driver.find_elements(By.XPATH, "//a[contains(@class, 'caldaylink')] | //span[contains(@class, 'caldaylinkcurrent')]")
+        for element in date_elements:
+            print(f"Found date element: {element.text}")  # ✅ 打印页面中所有的日期
+
+        print(f"Trying to match date: {formatted_date}")  # ✅ 打印要匹配的目标日期
 
         # **等待日期按钮可点击**
-        date_xpath = f"//a[contains(@class, 'caldaylink') and contains(text(), '{formatted_date}')]"
+        date_xpath = f"//a[@class='caldaylink' and normalize-space(text())='{formatted_date}']"
         date_element = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, date_xpath))
-       )
+        )
         driver.execute_script("arguments[0].scrollIntoView();", date_element)
         date_element.click()
+
 
         # **等待场地 + 时间按钮可点击**
         court_time_xpath = f"//td[contains(text(), '{court_time}')]/following-sibling::td[contains(text(), '{court}')]/..//a[contains(text(), 'Book')]"
