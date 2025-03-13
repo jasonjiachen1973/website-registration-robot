@@ -12,7 +12,7 @@ from datetime import datetime
 
 def format_date(date):
     dt = datetime.strptime(date, "%Y-%m-%d")  # 转换成 datetime 对象
-    return dt.strftime("%a, %b %d").upper()  # 变成 "WED, MAR 12"
+    return f"[ {dt.strftime('%a, %b %d').upper()} ]"  # 变成 "[ FRI, MAR 14 ]"
 
 def login_and_book(username, password, date, court, court_time):
     options = webdriver.ChromeOptions()
@@ -40,8 +40,7 @@ def login_and_book(username, password, date, court, court_time):
         # **等待跳转到主页，最多等待 5 秒**
         WebDriverWait(driver, 5).until(EC.url_contains("home"))
 
-        # **转换日期格式**
-        formatted_date = format_date(date)  # "WED, MAR 12"
+        
         
         # **等待 Indoor Court 页面可点击，并滚动到它**
         indoor_court_link = WebDriverWait(driver, 10).until(
@@ -50,11 +49,15 @@ def login_and_book(username, password, date, court, court_time):
         driver.execute_script("arguments[0].scrollIntoView();", indoor_court_link)
         indoor_court_link.click()
 
+        # **转换日期格式**
+        formatted_date = format_date(date)  # 变成 "[ FRI, MAR 14 ]"
+
         # **等待日期按钮可点击**
-        date_xpath = f"//a[contains(text(), '[ {formatted_date} ]')]"
+        date_xpath = f"//a[@class='caldaylink' and normalize-space(text())=normalize-space('{formatted_date}')]"
         date_element = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, date_xpath))
         )
+        driver.execute_script("arguments[0].scrollIntoView();", date_element)
         date_element.click()
 
         # **等待场地 + 时间按钮可点击**
