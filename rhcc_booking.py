@@ -69,9 +69,29 @@ def login_and_book(username, password, date, court, court_time):
 
 
         # **等待场地 + 时间按钮可点击**
-        court_time_xpath = f"//td[contains(text(), '{court_time}')]/following-sibling::td[contains(text(), '{court}')]/..//a[contains(text(), 'Book')]"
+        court_time_xpath = f"//a[contains(@class, 'calendarDayItemsLink') and contains(string(.), '{court}') and contains(string(.), '{court_time}')]"
+        print(f"Trying to match court: {court}, time: {court_time}")  # ✅ 调试
+        print(f"XPath: {court_time_xpath}")  # ✅ 打印 XPath
+
+        # **调试输出所有场地链接**
+        time_links = driver.find_elements(By.XPATH, "//a[contains(@class, 'calendarDayItemsLink')]")
+        for link in time_links:
+            print(f"Found court link: {link.get_attribute('outerHTML')}")  # ✅ 确认找到的 HTML
+
+        # **等待按钮可点击**
         book_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, court_time_xpath)))
-        book_button.click()
+
+        # **打印找到的按钮文本，确认是否正确匹配**
+        print(f"Found book button text: {book_button.text}")  # ✅ 确保按钮文本符合预期
+
+        # **滚动到元素**
+        driver.execute_script("arguments[0].scrollIntoView();", book_button)
+
+        # **尝试点击**
+        try:
+            book_button.click()
+        except:
+            driver.execute_script("arguments[0].click();", book_button)
 
         # **等待确认按钮可点击**
         confirm_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Confirm')]")))
